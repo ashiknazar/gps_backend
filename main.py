@@ -1,51 +1,48 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
-import sqlite3
 from datetime import datetime
+import psycopg2
 import os
 
 app = FastAPI()
 
-# Database file
-DB_FILE = "locations.db"
+DATABASE_URL = os.environ["DATABASE_URL"]
 
-# Initialize SQLite database if not exists
-if not os.path.exists(DB_FILE):
-    conn = sqlite3.connect(DB_FILE)
-    cursor = conn.cursor()
-    cursor.execute("""
-        CREATE TABLE locations (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            driver_id TEXT,
-            latitude REAL,
-            longitude REAL,
-            timestamp TEXT
-        )
-    """)
-    conn.commit()
-    conn.close()
-
-# Pydantic model for incoming GPS data
 class Location(BaseModel):
     driver_id: str
     latitude: float
     longitude: float
 
-@app.post("/location")
-def receive_location(loc: Location):
-    timestamp = datetime.utcnow().isoformat()
+def get_conn():
+    return psycopg2.connect(DATABASE_URL)
 
-    # Log to console for live verification
-    print(f"[{timestamp}] {loc.driver_id} -> {loc.latitude}, {loc.longitude}")
-
-    # Store in SQLite
-    conn = sqlite3.connect(DB_FILE)
-    cursor = conn.cursor()
-    cursor.execute(
-        "INSERT INTO locations (driver_id, latitude, longitude, timestamp) VALUES (?, ?, ?, ?)",
-        (loc.driver_id, loc.latitude, loc.longitude, timestamp)
-    )
+@app.on_event("startup")
+def init_db():
+    conn = get_conn()
+    cur = conn.cursor()
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS locations (
+            id SERIAL PRIMARY KEY,
+            driver_id TEXT,
+            latitude DOUBLE PRECISION,
+            longitude DOUBLE PRECISION,
+            timestamp TIMESTAMPTZ
+        )
+    """)
     conn.commit()
     conn.close()
 
-    return {"status": "received"}
+@app.post("/location")
+def receive_location(loc: Location):
+    conn = get_conn()
+    cur = conn.cursor()
+    cur.execute(
+        """
+        INSERT INTO locations (driver_id, latitude, longitude, timestamp)
+        VALUES (%s, %s, %s, %s)
+        """,
+        (loc.driver_id, loc.latitude, loc.longitude, datetime.utcnow())
+    )
+    conn.commit()
+    conn.close()
+    return {"status": "stored"}
