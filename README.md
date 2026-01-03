@@ -60,10 +60,11 @@ pip install -r requirements.txt
 uvicorn main:app --host 0.0.0.0 --port $PORT
 ```
 7. Add Environment Variable:
+```
 | Key            | Value                                                            |
 | -------------- | ---------------------------------------------------------------- |
 | `DATABASE_URL` | *Paste the internal database URL copied from PostgreSQL service* |
-
+```
 8. Click Create Web Service → Render will deploy the backend. 
 
 ## Android App Setup
