@@ -32,6 +32,7 @@ def init_db():
     conn.commit()
     conn.close()
 
+
 @app.post("/location")
 def receive_location(loc: Location):
     conn = get_conn()
@@ -44,5 +45,6 @@ def receive_location(loc: Location):
         (loc.driver_id, loc.latitude, loc.longitude, datetime.utcnow())
     )
     conn.commit()
+    print("INSERT OK:", loc.driver_id)
     conn.close()
     return {"status": "stored"}
