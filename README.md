@@ -8,14 +8,18 @@ This repository contains a **GPS tracking system** with two main components:
 ---
 
 ## Repository Structure
-
 gps_backend/
-├── backend/                # FastAPI backend
-│   ├── main.py             # Main FastAPI application
-│   ├── requirements.txt    # Python dependencies
-│
-├── DriverApp/              # Android application
-│   └── ...                 # Android project files
-│
-├── .gitignore              # Files and directories to ignore in Git
-└── README.md               # Project documentation
+├── backend/
+│   ├── main.py
+│   └── requirements.txt
+├── DriverApp/
+│   └── (Android project files)
+├── .gitignore
+└── README.md
+
+# Folder descriptions:
+# backend/       : FastAPI backend code
+# DriverApp/     : Android app source
+# .gitignore     : Git ignore rules
+# README.md      : Project documentation
+
