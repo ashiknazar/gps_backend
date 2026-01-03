@@ -35,6 +35,13 @@ def init_db():
 
 @app.post("/location")
 def receive_location(loc: Location):
+    ts = datetime.utcnow()
+
+    print(
+        f"GPS INSERT → driver={loc.driver_id}, "
+        f"lat={loc.latitude}, lon={loc.longitude}, time={ts}"
+    )
+
     conn = get_conn()
     cur = conn.cursor()
     cur.execute(
@@ -42,9 +49,10 @@ def receive_location(loc: Location):
         INSERT INTO locations (driver_id, latitude, longitude, timestamp)
         VALUES (%s, %s, %s, %s)
         """,
-        (loc.driver_id, loc.latitude, loc.longitude, datetime.utcnow())
+        (loc.driver_id, loc.latitude, loc.longitude, ts)
     )
     conn.commit()
-    print("INSERT OK:", loc.driver_id)
     conn.close()
+
     return {"status": "stored"}
+
